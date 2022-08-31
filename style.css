@@ -5,6 +5,7 @@ html,body{
 body{
     background-color: rgb(60, 60, 60);
     color: rgb(220, 220, 220);
+    font-family: Verdana;
     font-size: 2rem;
     padding: 0;
     margin: 0;
@@ -40,7 +41,7 @@ body{
 
 #calculator-screen{
     background-color: rgb(40, 40, 40);
-    height: 5rem;
+    height: 6rem;
     display: flex;
     justify-content: flex-end;
     align-items: flex-end;
@@ -48,16 +49,36 @@ body{
     margin: 1rem 0;
 }
 
-#result{
+#result-screen{
     font-size: 4rem;
     margin-right: 1rem;
 }
 
-#AC.button{
+#upper-input-container{
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+}
+
+.backspace-button{
+    align-self: flex-start;
+    border: 1px solid rgb(220, 220, 220);
+    flex: 1;
+    padding: 0.25rem 1rem;
+    margin-right: 0.5rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: 0.5s;
+}
+
+.clear-button{
     align-self: flex-end;
     border: 1px solid rgb(220, 220, 220);
+    flex: 1;
     padding: 0.25rem 1rem;
     margin-bottom: 1rem;
+    cursor: pointer;
+    transition: 0.5s;
 }
 
 #input-container{
@@ -66,8 +87,20 @@ body{
     gap: 0.5rem;
 }
 
-#input-container > .button{
+.number-button, .operator-button, .equal-button, .decimal-button{
     text-align: center;
-    border: 1px solid rgb(220, 220, 220);
+    border: 1px solid rgb(50, 50, 50);
+    cursor: pointer;
     padding: 0.5rem 1rem;
+    transition: 0.5s;
+}
+
+.backspace-button:hover,
+.clear-button:hover,
+.number-button:hover,
+.operator-button:hover,
+.equal-button:hover,
+.decimal-button:hover{
+    background-color: rgb(180, 180, 180);
+    color: rgb(20, 20, 20);
 }
