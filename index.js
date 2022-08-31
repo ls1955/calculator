@@ -1,122 +1,151 @@
+const previousOperationScreen = document.querySelector("#previous-operation-screen");
 const resultScreen = document.querySelector("#result-screen");
-const backspaceButton = document.querySelector(".backspace-button");
-const clearButton = document.querySelector(".clear-button");
-const operandButtons = Array.from(document.querySelectorAll(".operand-button"));
+const numButtons = Array.from(document.querySelectorAll(".number-button"));
 const decimalButton = document.querySelector(".decimal-button");
 const operatorButtons = Array.from(document.querySelectorAll(".operator-button"));
 const equalButton = document.querySelector(".equal-button");
-const keySfx = document.querySelector("audio");
-keySfx.volume = 0.2;
+const backspaceButton = document.querySelector(".backspace-button");
+const clearButton = document.querySelector(".clear-button");
 
-let operandFirst = 0;
-let operandSecond = 0;
-let currentOperator = "";
-let needResetScreen = false;
+const keyBoardSfx = document.querySelector("audio");
+keyBoardSfx.volume = 0.2;
 
-function appendNumber(number){
-    if(needResetScreen) resetScreen();
-    else if(resultScreen.textContent.length >= 7) return;
+let operand1 = 0;
+let operand2 = 0;
+let operation = "";
+let needCleanScreen = false;
 
-    resultScreen.textContent += number;
+function init(){
+    operand1 = 0;
+    operand2 = 0;
+    operation = "";
+    needCleanScreen = false;
 };
 
-function appendDecimal(){
-    if(needResetScreen) resetScreen();
-    else if(resultScreen.textContent.includes(".")) return;
+numButtons.forEach((numButton)=>{
+    numButton.addEventListener("click", ()=>{
+        if(needCleanScreen){
+            resultScreen.textContent = "";
+            needCleanScreen = false;
+        }
+
+        addNumToScreen(numButton.textContent);
+    });
+});
+
+decimalButton.addEventListener("click", ()=>{
+    addDecimalToScreen();
+});
+
+operatorButtons.forEach((operatorButton)=>{
+    operatorButton.addEventListener("click",()=>{
+        evaluate(operatorButton.textContent);
+    });
+});
+
+equalButton.addEventListener("click", ()=>{
+    calculateResult();
+});
+
+clearButton.addEventListener("click", ()=>{
+    init();
+    resultScreen.textContent = "";
+});
+
+backspaceButton.addEventListener("click", ()=>{
+    resultScreen.textContent = resultScreen.textContent.slice(0, -1);
+});
+
+window.addEventListener("keydown",(event)=>{
+    const {key} = event;
+
+    if(key >= 0 || key <= 9){
+        if(needCleanScreen){
+            resultScreen.textContent = "";
+            needCleanScreen = false;
+        }
+
+        addNumToScreen(key);
+    }else if(key === "."){
+        addDecimalToScreen();
+    }else if(key === "+" || key === "-" || key === "*" || key === "/"){
+        evaluate(key);
+    }else if(key === "Enter"){
+           calculateResult();
+    }else if(key === "Backspace"){
+        resultScreen.textContent = resultScreen.textContent.slice(0, -1);
+    }
+});
+
+function addNumToScreen(num){
+    if(needCleanScreen){
+        resultScreen.textContent = "";
+    }else if(resultScreen.textContent.length > 3){
+        return;
+    }
+
+    resultScreen.textContent += num;
+};
+
+function addDecimalToScreen(){
+    if(resultScreen.textContent.includes(".")) return;
 
     resultScreen.textContent += ".";
 };
 
-function setOperation(operator){
-    if(currentOperator !== "") calculate();
-
-    operandFirst = resultScreen.textContent;
-    currentOperator = operator;
-    needResetScreen = true;
+function addOperatorToScreen(operator){
+    resultScreen.textContent += operator;
 };
 
-function calculate(){
-    if(currentOperator === "/" && operandSecond === "0"){
-        resultScreen.textContent = "ERROR";
+function evaluate(operator){
+    if(operation !== ""){
+        operand2 = resultScreen.textContent;
+        operand1 = operate(operation, operand1, operand2);
+        resultScreen.textContent = operand1;
+    }
+
+    operand1 = resultScreen.textContent;
+    operation = operator;
+    addOperatorToScreen(operator);
+    needCleanScreen = true;
+};
+
+function calculateResult(){
+    if(operand1 === 0 || operation === ""){
         return;
     }
 
-    operandSecond = resultScreen.textContent;
-    let result = operateNumber(currentOperator, operandFirst, operandSecond);
-    resultScreen.textContent = roundNumber(result);
-    init();
+    operand2 = resultScreen.textContent;
+
+    if(operand2 === "0" && operation === "/"){
+        resultScreen.textContent = "ERROR";
+        init();
+        needCleanScreen = true;
+        return;
+    }
+
+    resultScreen.textContent = operate(operation, operand1, operand2);
+    needCleanScreen = true;
 };
 
-function operateNumber(operator, num1, num2){
+function operate(operator, num1, num2){
     num1 = parseFloat(num1);
     num2 = parseFloat(num2);
-    switch(operator){
-        case "+":{
-            return (num1 + num2);
-        }case "-":{
-            return (num1 - num2);
-        }case "*":{
-            return (num1 * num2);
-        }case "/":{
-            if(num2 !== 0) return (num1 * num2);
-            return null;
-        }
-    };
-}
+    let result = 0;
 
-function roundNumber(number){
-    return Math.round(number);
-}
-
-function deleteNumber(){
-    resultScreen.textContent = resultScreen.textContent.slice(0, -1);
-};
-
-function resetScreen(){
-    resultScreen.textContent = "";
-    needResetScreen = false;
-}
-
-function init(){
-    operandFirst = 0;
-    operandSecond = 0;
-    currentOperator = "";
-    needResetScreen = true;
-}
-
-operandButtons.forEach((operandButton)=>{
-    operandButton.addEventListener("click",()=>{
-        appendNumber(operandButton.id);
-    });
-});
-decimalButton.addEventListener("click", appendDecimal);
-operatorButtons.forEach((operatorButton)=>{
-    operatorButton.addEventListener("click",()=>{
-        setOperation(operatorButton.textContent);
-        resultScreen.textContent += operatorButton.textContent;
-    });
-});
-equalButton.addEventListener("click", calculate);
-backspaceButton.addEventListener("click", deleteNumber);
-clearButton.addEventListener("click", ()=>{
-    resetScreen();
-    init();
-});
-
-window.addEventListener("keydown", ({key})=>{
-    keySfx.currentTime = 0.115;
-    keySfx.play();
-
-    if(key >= 0 || key <= 9){
-        appendNumber(key);
-    }else if(key === "."){
-        appendDecimal();
-    }else if(key === "+" || key === "-" || key === "*" || key === "/"){
-        setOperation(key);
-        resultScreen.textContent += key;
-    }else if(key === "Enter"){
-        calculate();
-    }else if(key === "Backspace"){
-        deleteNumber();
+    if(operator === "+"){
+        result = (num1 + num2);
+    }else if(operator === "-"){
+        result = (num1 - num2);
+    }else if(operator === "*"){
+        result = (num1 * num2);
+    }else if(operator === "/"){
+        result = (num1 / num2);
     }
-});
+
+    init();
+    if(result > 9999999){
+        result = "ERROR";
+    }
+    return result;
+};
