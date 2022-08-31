@@ -7,9 +7,6 @@ const equalButton = document.querySelector(".equal-button");
 const backspaceButton = document.querySelector(".backspace-button");
 const clearButton = document.querySelector(".clear-button");
 
-const keyBoardSfx = document.querySelector("audio");
-keyBoardSfx.volume = 0.2;
-
 let operand1 = 0;
 let operand2 = 0;
 let operation = "";
